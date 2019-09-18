@@ -1,0 +1,102 @@
+/SLLS oral presentation SLEs// 18.09/19
+
+use "Q:\dofiles\MI_chp3-4_230719.dta", clear
+use "Q:\dofiles\sllsappjan2019.dta", clear
+
+
+//three different samples for complete cases//
+gen indtest6= 1 if masttot14x != . & sletot != . 
+gen indtest7= 1 if lnghq15 != . & sletot != . 
+gen indtest8= 1 if cvd2 != . & sletot != . 
+
+*generating domains of stressful events****************
+//childhood
+gen cevent=div15+pardied+moveschtot2+homemove59+sepmum3+fill+mill+illy15+illy11+ill5y 
+
+//socad adversity//
+gen socad35= famcrisis82+sibdead72+relhosp82+rel_ill89+rel_ill99+rel_ill09+reldie82+reldie89+reldie99+reldie09+reldiv82+chdie82+disspouse89+disspouse99+dsspouse09+rdis89+rdis99+rdisp09+rlos89+rlost99+rlost09+moved89+move1999+moved09+ms14r+spou_acc89+spou_acc99+spou_acc09+diffschild89+diffschild99+diffschild09+robbed82+robbed89+robb99+rob09
+tab socad35
+
+//economic//
+gen jobad=splj09+splj99+spolj89+LJOB09+ljob99+lojob89+spc09+spc99+spc89+WKC09+wkc99+wkc89+wkc82+redun
+
+//total events//
+gen sletot= socad35+ jobad+ cevent
+
+//quartiles//
+ egen stressquart= cut(sletot), group (4)  label
+_strip_labels stressquart //think takes labels off it//
+
+*independent*
+gen indtot=robb82+rob89+rob+rob09+spc89+spc99+spc09+splj89+splj+splj09+spac89+spac3+spac09+chdf89+chdf+chdf09+relh82+relil89+relil+relil09+reldi82+reld89+reld+reld09+relsd82
+
+*dependent total*
+gen deptot=wkc09+wkc+wkc89+wkcr82+ljob89+ljob+ljob09+hou209+houm89+hou2+famcr82+dssp89+dssp+dssp09+rdis89+rdis+rdis09+rlos89+rlos+rlos09 
+
+//time periods
+gen recent= sle14+sle09 //two recent waves//
+gen hist= sle82+sle89+sle99 //historical ones
+
+gen sle14= redun+ ms14r
+gen sle09= dssp09+relil09+reld09+rdis09+rlos09+hou209+spac09r+chdf09+rob09+splj09+ljob09+spc09+wkc09
+gen sle99=dsspr+relil+reld+rdis+rlos+hou2+spac3+chdfr+robb99+splj99+ljob99+spc99+wkc99
+gen sle89= dssp89+relil89+reld89+rdis89+rlos89+houm89+spac89+chdf89+rob89+spolj89+lojob89+spc89+wkc89
+gen sle82= famcr82+relsd82+reldi82+robb82+child82+wkc82
+
+*\\\\\interpersonal\\\\*
+gen ipers=relh82+relil89+relil+relil09+reldi82+reld89+reld+reld09+relsd82+rdis89+rdis+rdis09+rlos89+rlos+rlos09 
+sum SIBD72 famcr82 dssp89r dsspr dssp09r relilr RELIL09 RELDI82 reld89 reldr RELD09 RELSD82 rdisr RDIS09 rlos89 rlosr RLOS09 houm89 hou2r HOU209 child82r ms14r spac89r spac3r spac09r chdf89r chdfr chdf09r robb82 rob89 robb99 ROB09
+alpha SIBD72 famcr82 dssp89r dsspr dssp09r relilr RELIL09 RELDI82 reld89 reldr RELD09 RELSD82 rdisr RDIS09 rlos89 rlosr RLOS09 houm89 hou2r HOU209 child82r ms14r spac89r spac3r spac09r chdf89r chdfr chdf09r robb82 rob89 robb99 ROB09, std item label
+
+*\\\\*personal*\\\\*
+gen pers=wkc09+wkc+wkc89+wkcr82+ljob89+ljob+ljob09+hou209+houm89+hou2+famcr82+dssp89+dssp+dssp09+ac89+ac+ac09+robb82+rob89+rob+rob09+spc89+spc99+spc09+splj89+splj+splj09+ill89+ill+ill09+spac89+spac3+spac09+chdf89+chdf+chdf09
+
+
+//MI for SLLS// other vars included as for data set used for thesis analysis too
+
+*start*
+set more off
+keep serno masttot14x medg fedg chsc cevent cog11h educg sc1553 incmn15 rel parpcon parbcon parentalcare socad possupp68 negsupp68 income sex acetotfin15x
+
+sum serno masttot14x medg fedg chsc cevent cog11h educg sc1553 incmn15 rel parpcon parbcon parentalcare socad possupp68 negsupp68 income acetotfin15x sex 
+misstable sum serno masttot14x medg fedg chsc cevent cog11h educg sc1553 incmn15 rel parpcon parbcon parentalcare socad possupp68 negsupp68 income acetotfin15x sex
+misstable patterns serno masttot14x medg fedg chsc cevent cog11h educg sc1553 incmn15 rel parpcon parbcon parentalcare socad possupp68 negsupp68 income acetotfin15x sex  
+misstable sum, gen(mv_) all //generate missing values// //important step for later on// 
+
+mi stset, clear  
+//if problem this comes up// 
+mi set flong //first the data must be MI set- produces new _mi_m variables//
+mi convert flong //dont need this unles changing to mlong etc//
+mi register imputed medg fedg chsc cevent cog11h educg sc1553 incmn15 rel parpcon parbcon parentalcare socad possupp68 negsupp68 income acetotfin15x //(register every var you plan to impute//
+mi register regular sex //(the vars with complete data- ian doesnt do this//
+
+//nb log transformed skewed vars version///
+lnskew0 lsocad= socad, level(95)
+
+//multivariate imputation// //put a dryrun in first to see what's happening//
+//for number of imputations- rule of thumb is % of data missing should be no. of imputes
+mi impute chained (regress) parentalcare parbcon lcevent lgparpcon lsocad lnegsupp lpossupp68 lincome(ologit) medg fedg chsc educg sc1553 incmn15 (mlogit) rel = sex masttot14x, force add(10) burnin(10) replace rseed(39)  dryrun
+//if any had perfection prediction it would be (logit, augment) //
+//then without dry run//
+mi impute chained (regress) lcevent parentalcare lgparpcon parbcon lsocad lnegsupp68 lpossupp68 lincome (ologit) medg fedg chsc educg sc1553 incmn15 (mlogit) rel = sex masttot14x, force add(15) replace rseed(39) burnin(10) 
+lab var _mi_m "Imputation number"
+lab def obs 0 "Observed"
+lab val _mi_m obs
+
+drop if masttot14x==.
+drop if sc1553==.
+mi update 
+
+//MI data set n 2038///
+mi estimate: regress masttot14x sex socad //-0.15 (CI -.21, -.08)
+mi estimate: regress lnghq15 sex socad  //0.03 (CI 0.02, 0.03)
+mi estimate: logit respn15 sex socad, or  //0.08 (CI 0.04, 0.13)
+mi estimate: logit cvd2 sex socad, or  //0.08 (CI 0.02, 0.14)
+
+mi estimate: regress masttot14x sex cevent //-.20 (CI -0.31, -0.06)
+mi estimate: regress lnghq15 sex cevent  //0.02 (CI -0.00, 0.03) p0.091
+mi estimate: logit respn15 sex cevent, or  //0.08 (CI -0.01, 0.17)
+mi estimate: logit cvd2 sex cevent, or  //0.09 (CI -.01, .20)
+
+
+
