@@ -1,0 +1,726 @@
+////Life events - TOTAL///
+
+//_____Childhood_____//
+*divscage divorce*
+gen div15= divscage
+mvdecode div15, mv(99=.) //2 sm unknown when parents divorced- could be after 15 but don't know)//
+recode div15 (0/15=1) (16/88=0) 
+replace div15 = 1 if divscage == 99 & livi1== 3 //add one of those missing 2//
+label var div15 "Parental divorce 15 (2 cat)"
+label define div15lab 0 "no"  1 "yes" 
+label values div15 div15lab
+tab div15
+
+*father death before 15*
+gen mdiedu15=0
+label variable mdiedu15 "Mother died before SM age 15"
+replace mdiedu15=1 if MLIV66>45 & MLIV66<62
+gen fdiedu15=0
+label variable fdiedu15 "Father died before SM age 15"
+replace fdiedu15=1 if FLIV66>44 & FLIV66<62
+gen pardied=mdiedu15+fdiedu15
+recode pardied (2=1)
+label variable pardied "Parent died before SM age 15"
+tab mdiedu15
+tab fdiedu15
+tab pardied
+
+*school moves 6-15*
+mvdecode movsh, mv(-9999=. \ -9899=. )
+recode movsh (0/1=0) (2/4=1), gen(moveschtot)
+label var moveschtot "school moves age 6-15 (2 cat)"
+label define moveschtot 0 "no" 1 "yes" 9 "special school"
+label values moveschtot moveschtotlab 
+tab moveschtot
+*merging special school* //one to use//// 
+recode movsh (0 1 9=0) (2/4=1), gen(moveschtot2)
+label define movesschtot2lab 0 "no" 1 "yes"
+label values moveschtot2 moveschtot2lab 
+tab moveschtot2
+
+*residential moves by age 13*
+recode TOTMOV59 (0 9=0) (1/8=1), gen(homemove59)
+label var homemove59 "residential moves age 0-13 (2 cat)"
+label define homemove59lab 0 "no" 1 "yes"
+label values homemove59 homemove59lab
+tab homemove59
+
+*Maternal separation (acknowledged to be untransparent labelling*
+recode SET4652 (0/3=0) (4/9 -9799  =1), gen(sepmum)
+label variable sepmum "separated from mother before 1952"
+label define sepmum 0 "sep<4wks" 1 "sep4+wks"
+label values sepmum sepmum
+
+*unknown categories -9999, -9899, -9799
+*regular or permanent separation, and unknown unknown*
+recode sepmum (-9999 -9899 -9799 0=0) (1=1), gen(sepmum2) 
+label define sepmum2lab 0 "no" 1 "yes"
+label values sepmum2 sepmum2lab 
+tab sepmum2
+
+*third attempt feb 2018*
+recode SET4652 (0/3=0) (4/9 -9799  =1), gen(sepmum3)
+label define sepmum3lab 0 "no" 1 "yes" //one to use/// 
+mvdecode sepmum3, mv( -9999=. \  -9899=. )
+label values sepmum3 sepmum3lab 
+tab sepmum3
+
+
+*father ill*
+recode evifa (-9999 -9899 0=0) (1/9=1), gen (fill)
+label variable fill "father ill up to 15"
+label define filllab 0 "no" 1 "yes" 
+replace fill = 1 if evifa == -9899 //added  unknown dates// 
+label values fill filllab
+tab fill
+
+*mother ill*
+recode evima (-9999 -9899 0=0) (1/9=1), gen (mill)
+label variable mill "mother ill up to 15"
+label define milllab 0 "no" 1 "yes" 
+replace mill = 1 if evima == -9899 //added  unknown dates// 
+label values mill milllab
+tab mill
+
+tab ils1
+recode ils1 (0=0) (1/30=1), gen(ill5y)
+label variable ill5y "child ill up to 5 yr"
+label define ill5ylab 0 "no" 1 "yes"
+label values ill5y ill5ylab
+tab ill5y
+
+tab ils2
+recode ils2 (0=0) (1/31=1), gen(illy11)
+*dead on next line* 
+mvdecode illy11, mv(32=. )
+label variable illy11 "child ill up to 11"
+label define illy11lab 0 "no" 1 "yes"
+label values illy11 illy11lab
+tab illy11
+
+tab ils3
+mvdecode ils3, mv(32=. )
+recode ils3 (0=0) (1/30=1), gen(illy15)
+label variable illy15 "child ill up to 15"
+label define illy15 0 "no" 1 "yes"
+label values illy15 illy15lab
+tab illy15
+
+
+*Total score*
+
+gen cevent=div15+pardied+moveschtot2+homemove59+sepmum3+fill+mill+illy15+illy11+ill5y 
+sum div15 pardied moveschtot2 homemove59 sepmum2 fill mill illy15 illy11 ill5y
+alpha div15 pardied moveschtot2 homemove59 sepmum2 fill mill illy15 illy11 ill5y, std item label 
+
+//_____Health_____//
+***Disability resulting from accident at age 26 
+*recode disability from accident #1 to #16 to none/minor and rest.
+
+mvdecode disab1 disab2 disab3 disab4 disab5 disab6 disab7 disab8 disab9 disab10 disab11 disab12 disab13 disab14 disab15 disab16, mv(9=.)
+
+
+gen disab172=.
+replace disab172=0 if (disab1==0 | disab1== 1)
+replace disab172=9 if (disab1==8)
+replace disab172=1 if (disab1==2 | disab1==3 | disab1==4 | disab1==5 | disab1==6 | disab1==7) 
+replace disab172=. if disab1==.
+label var disab172 "Disability from accident #1 at age 26"
+label def disab172 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab172 disab172
+tab  disab1 disab172
+
+
+gen disab272=.
+replace disab272=0 if (disab2==0 | disab2== 1)
+replace disab272=9 if (disab2==8)
+replace disab272=1 if (disab2==2 | disab2==3 | disab2==4 | disab2==5 | disab2==6 | disab2==7) 
+label var disab272 "Disability from accident #2 at age 26"
+label def disab272 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab272 disab172
+tab  disab2 disab272
+
+
+gen disab372=.
+replace disab372=0 if (disab3==0 | disab3== 1)
+replace disab372=9 if (disab3==8)
+replace disab372=1 if (disab3==2 | disab3==3 | disab3==4 | disab3==5 | disab3==6 | disab3==7) 
+label var disab372 "Disability from accident #3 at age 26"
+label def disab372 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab372 disab172
+tab  disab3 disab372
+
+
+gen disab472=.
+replace disab472=0 if (disab4==0 | disab4== 1)
+replace disab472=9 if (disab4==8)
+replace disab472=1 if (disab4==2 | disab4==3 | disab4==4 | disab4==5 | disab4==6 | disab4==7) 
+label var disab472 "Disability from accident #4 at age 26"
+label def disab472 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab472 disab172
+tab  disab4 disab472
+
+
+gen disab572=.
+replace disab572=0 if (disab5==0 | disab5== 1)
+replace disab572=9 if (disab5==8)
+replace disab572=1 if (disab5==2 | disab5==3 | disab5==4 | disab5==5 | disab5==6 | disab5==7) 
+label var disab572 "Disability from accident #5 at age 26"
+label def disab572 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab572 disab172
+tab  disab5 disab572
+
+gen disab672=.
+replace disab672=0 if (disab6==0 | disab6== 1)
+replace disab672=9 if (disab6==8)
+replace disab672=1 if (disab6==2 | disab6==3 | disab6==4 | disab6==5 | disab6==6 | disab6==7) 
+label var disab672 "Disability from accident #6 at age 26"
+label def disab672 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab672 disab172
+tab  disab6 disab672
+
+
+gen disab772=.
+replace disab772=0 if (disab7==0 | disab7== 1)
+replace disab772=9 if (disab7==8)
+replace disab772=1 if (disab7==2 | disab7==3 | disab7==4 | disab7==5 | disab7==6 | disab7==7) 
+label var disab772 "Disability from accident #7 at age 26"
+label def disab772 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab772 disab172
+tab  disab7 disab772
+
+
+gen disab872=.
+replace disab872=0 if (disab8==0 | disab8== 1)
+replace disab872=9 if (disab8==8)
+replace disab872=1 if (disab8==2 | disab8==3 | disab8==4 | disab8==5 | disab8==6 | disab8==7) 
+label var disab872 "Disability from accident #8 at age 26"
+label def disab872 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab872 disab172
+tab  disab8 disab872
+
+
+gen disab972=.
+replace disab972=0 if (disab9==0 | disab9== 1)
+replace disab972=9 if (disab9==8)
+replace disab972=1 if (disab9==2 | disab9==3 | disab9==4 | disab9==5 | disab9==6 | disab9==7) 
+label var disab972 "Disability from accident #9 at age 26"
+label def disab972 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab972 disab172
+tab  disab9 disab972
+
+gen disab1072=.
+replace disab1072=0 if (disab10==0 | disab10== 1)
+replace disab1072=9 if (disab10==8)
+replace disab1072=1 if (disab10==2 | disab10==3 | disab10==4 | disab10==5 | disab10==6 | disab10==7) 
+label var disab1072 "Disability from accident #10 at age 26"
+label def disab1072 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab1072 disab172
+tab  disab10 disab1072
+
+
+gen disab1172=.
+replace disab1172=0 if (disab11==0 | disab11== 1)
+replace disab1172=9 if (disab11==8)
+replace disab1172=1 if (disab11==2 | disab11==3 | disab11==4 | disab11==5 | disab11==6 | disab11==7) 
+label var disab1172 "Disability from accident #11 at age 26"
+label def disab1172 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab1172 disab172
+tab  disab11 disab1172
+
+
+gen disab1272=.
+replace disab1272=0 if (disab12==0 | disab12== 1)
+replace disab1272=9 if (disab12==8)
+replace disab1272=1 if (disab12==2 | disab12==3 | disab12==4 | disab12==5 | disab12==6 | disab12==7) 
+label var disab1272 "Disability from accident #12 at age 26"
+label def disab1272 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab1272 disab172
+tab  disab12 disab1272
+
+
+gen disab1372=.
+replace disab1372=0 if (disab13==0 | disab13== 1)
+replace disab1372=9 if (disab13==8)
+replace disab1372=1 if (disab13==2 | disab13==3 | disab13==4 | disab13==5 | disab13==6 | disab13==7) 
+label var disab1372 "Disability from accident #13 at age 26"
+label def disab1372 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab1372 disab172
+tab  disab13 disab1372
+
+
+gen disab1472=.
+replace disab1472=0 if (disab14==0 | disab14== 1)
+replace disab1472=9 if (disab14==8)
+replace disab1472=1 if (disab14==2 | disab14==3 | disab14==4 | disab14==5 | disab14==6 | disab14==7) 
+label var disab1472 "Disability from accident #14 at age 26"
+label def disab1472 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab1472 disab172
+tab  disab14 disab1472
+
+
+gen disab1572=.
+replace disab1572=0 if (disab15==0 | disab15== 1)
+replace disab1572=9 if (disab15==8)
+replace disab1572=1 if (disab15==2 | disab15==3 | disab15==4 | disab15==5 | disab15==6 | disab15==7) 
+label var disab1572 "Disability from accident #15 at age 26"
+label def disab1572 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab1572 disab172
+tab  disab15 disab1572
+
+
+gen disab1672=.
+replace disab1672=0 if (disab16==0 | disab16== 1)
+replace disab1672=9 if (disab16==8)
+replace disab1672=1 if (disab16==2 | disab16==3 | disab16==4 | disab16==5 | disab16==6 | disab16==7) 
+label var disab1672 "Disability from accident #16 at age 26"
+label def disab1672 0"None or minor" 1"Yes" 9 "Not applicable", modify
+label val disab1672 disab172
+tab  disab16 disab1672
+
+
+*Generate summary variable of disability from accidents #1 to #16 at age 26*
+gen disa72=.
+replace disa72=0 if (disab172==9 & disab272==9 & disab372==9 & disab472==9 & disab572==9 & disab672==9 & disab772==9 & disab872==9 & disab972==9 & disab1072==9 & disab1172==9 & disab1272==9 & disab1372==9 & disab1472==9 & disab1572==9 & disab1672==9)
+replace disa72=0 if (disab172==0 | disab272==0 | disab372==0 | disab472==0 | disab572==0 | disab672==0 | disab772==0 | disab872==0 | disab972==0 | disab1072==0 | disab1172==0 | disab1272==0 | disab1372==0 | disab1472==0 | disab1572==0 | disab1672==0)
+replace disa72=1 if (disab172==1 | disab272==1 | disab372==1 | disab472==1 | disab572==1 | disab672==1 | disab772==1 | disab872==1 | disab972==1 | disab1072==1 | disab1172==1 | disab1272==1 | disab1372==1 | disab1472==1 | disab1572==1 | disab1672==1) 
+
+label var disa72 "Disability from accident #1 to #16 at age 26"
+label def disa72 0"No disability or minor" 1"Yes" , modify
+label val disa72 disa72
+tab  disa72 
+
+//Other health diagnoses
+//Age 60-64
+gen modsevcd15=CD_15MODSEVTOT
+tab modsevcd15
+
+mvdecode ac89 ac, mv(9=.)
+mvdecode AC09, mv(9=.\7=.)
+
+tab ac89
+tab ac
+clonevar ac99=ac
+recode ac99 2=0 1=1 
+label def ac99 0"No" 1"Yes", modify 
+label val ac99 ac99
+tab ac99 ac
+tab ac99
+tab AC09
+
+//Illness at age 15-20
+tab ils4
+mvdecode ils4, mv(32=. )
+recode ils4 (0=0) (1/31=1), gen(ill1520)
+label variable ill1520 " ill 15 to 20"
+label define ill1520 0 "no" 1 "yes"
+label values ill1520 ill1520
+tab ill1520
+
+//Illness at age 20-25
+tab ils5
+mvdecode ils5, mv(32=. )
+recode ils5 (0=0) (1/31=1), gen(ill2025)
+label variable ill2025 " ill 20 to 25"
+label define ill2025 0 "no" 1 "yes"
+label values ill2025 ill2025
+tab ill2025
+
+//illness at age 43, 53, 60-64
+mvdecode ill89 ill, mv(9=. )
+mvdecode ILL09, mv(9=.\7=. )
+
+
+drop hlthad
+gen hlthad=ac89+ac99+AC09+disa72+ill1520+ill2025+ill89+ill+ILL09
+sum ac89 ac99 AC09 disa72 ill1520 ill2025 ill89 ill ILL09
+alpha ac89 ac99 AC09 disa72 ill1520 ill2025 ill89 ill ILL09, std item label
+tab hlthad
+
+gen lifehealth= hlthad+ils1+ils2+ils3+ils4+ils5
+
+//_____Social_____//
+**recode data as missing 
+//-9999// 9=.
+mvdecode famcrisis82 sibdead72 relhosp82 reldie82 reldiv82 relsd82 chdie82 sibd72 robbed82, mv (-9999=.\9=.)  //no q, & unknown//
+mvdecode disspouse89 disspouse99 rel_ill89 rel_ill99 reld89 reldie89 rdis89 rdis99 rlos89 rlost99 moved89 spou_acc89 diffschild89 diffschild99 spou_acc99, mv (9=.) //unknown//
+mvdecode rel_ill09 reldie09 rdisp09 rlost09 moved09 spou_acc09 diffschild09 rob09 dsspouse09, mv (7=.\9=.) //no q, unknown// 
+mvdecode robbed89 robb99 reldie89, mv (9=.) //unknown//
+
+
+**summary of variables**
+
+//family crises//
+tab famcr82 
+gen famcrisis82= famcr82
+tab famcrisis82
+
+tab sibd72
+gen sibdead72= sibd72
+tab sibdead72 
+mvdecode sibd72, mv (-9999) //No A form//
+recode sibd72 9=0 // no label// 
+tab sibdead72
+
+//relatives hospital//
+tab relh82
+gen relhosp82= relh82
+tab relhosp82
+
+tab relil89 // relativesfriend serious accident or illness 1989//
+clonevar rel_ill89=relil89
+tab rel_ill89, nol
+
+tab relil // relativesfriend serious accident or illness 1999//
+clonevar rel_ill99 =relil
+recode rel_ill99 2/3=0 1=1 //3 is no friend so goes in no experience// 
+tab rel_ill99, nol
+
+tab relil09  // relativesfriend serious accident or illness 2009 //
+clonevar rel_ill09=relil09
+tab rel_ill09, nol
+
+//relatives die//
+tab reldi82 //1982//
+gen reldie82= reldi82
+tab reldie82, nol
+
+tab reld89  //1989//   
+clonevar reldie89=reld89
+tab reldie89, nol
+
+tab reld //1999//
+clonevar reldie99=reld
+recode reldie99 2/3=0 1=1 //3 is no friend// 
+tab reldie99, nol
+
+tab reld09, nol  //2009//   
+clonevar reldie09=reld09
+tab reldie09, nol
+
+//relatives divorce//
+tab relsd82 
+gen reldiv82= relsd82
+tab reldiv82, nol
+
+//child die//
+tab child82, nol
+clonevar chdie82=child82
+recode chdie82 0=0 8=0 1=1 //8 is no child then so goes in no experience// 
+label def chdie82 0"No" 1"Yes", modify 
+label val chdie82 child82
+tab chdie82
+
+//spousal dispute//
+tab dssp89
+clonevar disspouse89=dssp89
+recode disspouse89 (0 8=0) (1=1) //8 is no spouse partner so goes in no dispute// 
+label def disspouse89 0"No" 1"Yes", modify 
+label val disspouse89 disspouse89
+tab disspouse89, nol
+
+tab dssp, nol //1999//
+clonevar disspouse99=dssp 
+recode disspouse99 (2 3 8=0) (1=1) //3 and 8 is no spouse partner so goes in no dispute// 
+label def disspouse99 0"No" 1"Yes", modify 
+label val disspouse99 disspouse99
+tab disspouse99, nol
+
+tab dssp09 //09//
+clonevar dsspouse09=dssp09
+recode dsspouse09 0=0 8=0 1=1 //8 is no spouse partner so goes in no dispute// 
+label def dsspouse09 0"No" 1 "Yes", modify 
+label val dsspouse09 dssp09
+tab dsspouse09 dssp09
+tab dsspouse09
+
+//relative dispute//
+tab rdis89 //1989
+gen reldisp89= rdis89 
+tab rdis89, nol
+
+tab rdis ///1999
+gen rdis99=rdis
+recode rdis99 2/3=0 1=1 //3 is no friend so goes in no experience// 
+label def rdis99 0"No" 1"Yes", modify 
+label val rdis99 rdis99
+tab rdis99 rdis
+tab rdis99, nol
+
+tab rdis09 //2009//
+gen rdisp09=rdis09
+tab rdisp09
+
+//lost contact with friend rel///
+tab rlos89
+gen rlost89= rlos89 //1989//
+tab rlos89, nol
+
+tab rlos
+gen rlost99=rlos 
+recode rlost99 2/3=0 1=1 //3 is no friend so goes in no experience// 
+label def rlost99 0"No" 1"Yes", modify 
+label val rlost99 rlosr
+tab rlost99 rlos
+tab rlost99
+
+tab rlos09 //2009//
+gen rlost09 = rlos09
+tab rlost09, nol
+
+//moved home//
+tab houm89
+gen moved89=houm89
+tab moved89
+
+tab hou2 //1999/
+clonevar move1999=hou2
+label def move1999 0"No" 1"Yes", modify 
+label val move1999 move1999
+recode move1999 2=0 1=1
+tab move1999, nol 
+
+tab hou209, nol //get hou209//
+gen moved09=hou209 
+tab moved09
+
+tab ms14 //single or married, vs marriage disruption (ever separated, divorced widowed)
+drop ms14r
+clonevar ms14r=ms14
+recode ms14r 1/2=0 3/5=1
+label def ms14r 0"Single or married" 1"Separated, divorced or widowed", modify 
+label val ms14r ms14r
+tab ms14r ms14
+tab ms14r, nol
+
+//spousal accident//
+tab spac89 //89//
+clonevar spou_acc89=spac89
+recode spou_acc89 0=0 8=0 1=1 //8 is no partner then so goes in no experience// 
+label def spou_acc89 0"No" 1"Yes", modify 
+label val spou_acc89 spou_acc89
+tab spou_acc89 spac89
+tab spou_acc89, nol 
+
+tab spac3
+clonevar spou_acc99=spac3 //99//
+recode spou_acc99 2/8=0 1=1 //3 and 8 is no child then so goes in no experience// 
+label def spou_acc99 0"No" 1"Yes", modify 
+label val spou_acc99 spou_acc99
+tab spou_acc99 spac3
+tab spou_acc99, nol
+
+clonevar spou_acc09=spac09 //2009//
+tab spou_acc09
+recode spou_acc09 2=0 0=0 1=1 //8 is no partner then so goes in no experience// 
+label def spou_acc09 0"No" 1"Yes", modify 
+label val spou_acc09 spou_acc09
+tab spou_acc09 spac09
+tab spou_acc09, nol
+
+//difficulties with children//
+
+tab chdf89
+clonevar diffschild89=chdf89 //89//
+recode diffschild89 8=0 0=0 1=1 //8 is no child then so goes in no experience// 
+label def diffschild89 0"No" 1"Yes", modify 
+label val diffschild89 diffschild89
+tab diffschild89 chdf89
+tab diffschild89, nol
+
+tab chdf
+clonevar diffschild99=chdf //1999//
+recode diffschild99 3=0 2=0 1=1 //8 is no child then so goes in no experience// 
+label def diffschild99 0"No" 1"Yes", modify 
+label val diffschild99 diffschild99
+tab diffschild99 chdf
+tab diffschild99, nol
+
+clonevar diffschild09=chdf09 //2009//
+recode diffschild09 2=0 0=0 1=1 //8 is no child then so goes in no experience// 
+label def diffschild09 0"No" 1"Yes", modify 
+label val diffschild09 diffschild09
+tab diffschild09 chdf09
+tab diffschild09, nol
+
+//robbed house///
+tab robb82 //1982//
+gen robbed82=robb82
+tab robbed82, nol
+
+tab rob89 //1989//
+gen robbed89= rob89
+tab robbed89
+
+tab rob //1999//
+clonevar robb99=rob
+recode robb99 1=1 2=0 
+label def robb99 0"No" 1"Yes", modify 
+label val robb99 robb99
+tab robb99, nol
+
+tab rob09, nol
+
+***Generating total social adversity score***
+drop socad
+//27//
+gen socadd=famcr82+dssp89+dsspr+dssp09+relil+relil09+reldi82+reld89+reld+reld09+relsd82+rdis+rdis09+rlos89+rlos+rlos09+houm89+hou2+hou209+child82+ms14+spac89+spac3+spac09+chdf89+chdfr+chdf09
+
+//35// 
+gen socad35= famcrisis82+sibdead72+relhosp82+rel_ill89+rel_ill99+rel_ill09+reldie82+reldie89+reldie99+reldie09+reldiv82+chdie82+disspouse89+disspouse99+dsspouse09+rdis89+rdis99+rdisp09+rlos89+rlost99+rlost09+moved89+move1999+moved09+ms14r+spou_acc89+spou_acc99+spou_acc09+diffschild89+diffschild99+diffschild09+robbed82+robbed89+robb99+rob09
+egen socadmissing= rowmiss(famcrisis82 sibdead72 relhosp82 rel_ill89 rel_ill99 rel_ill09 reldie82 reldie89 reldie99 reldie09 reldiv82 chdie82 disspouse89 disspouse99 dsspouse09 rdis89 rdis99 rdisp09 rlos89 rlost99 rlost09 moved89 move1999 moved09 ms14r spou_acc89 spou_acc99 spou_acc09 diffschild89 diffschild99 diffschild09 robbed82 robbed89 robb99 rob09)
+
+egen socad17= rowtotal(famcrisis82 sibdead72 relhosp82 rel_ill89 rel_ill99 rel_ill09 reldie82 reldie89 reldie99 reldie09 reldiv82 chdie82 disspouse89 disspouse99 dsspouse09 rdis89 rdis99 rdisp09 rlos89 rlost99 rlost09 moved89 move1999 moved09 ms14r spou_acc89 spou_acc99 spou_acc09 diffschild89 diffschild99 diffschild09 robbed82 robbed89 robb99 rob09)
+
+replace socad17=. if socadmissing >=18
+
+You need to count the missingness in socad when you derive it. E.g egen numbermissing=nmiss(var1, var2,…) (I think!) 
+Then you need to drop if numbermissing>14 (or whatever) after the MI.
+socadmissing 
+
+
+
+gen socad3=famcrisis82+sibdead72+relhosp82+rel_ill89+rel_ill99+rel_ill09+reldie82+reldie89+reldie99+reldie09+reldiv82+chdie82+disspouse89+disspouse99+dsspouse09+rdis89+rdis99+rdisp09+rlos89+rlost99+rlost09+spou_acc89+spou_acc99+spou_acc09+diffschild89+diffschild99+diffschild09
+
+
+gen socad09=dssp09+relil09+reld09+rdis09+rlos09+hou209+spac09r+chdf09+rob09
+gen socad99=dsspr+relil+reld+rdis+rlos+hou2+spac3+chdfr+robb99
+gen socad89=dssp89+relil89+reld89+rdis89+rlos89+houm89+spac89+chdf89+rob89
+gen socad82=famcr82+relsd82+reldi82+robb82+child82
+
+
+
+/ /_____Economic_____//
+mvdecode RETR14_4x, mv (-7=.\-9=.)
+mvdecode WKC09 spcr89 SPCR09 LJOB09 SPLJ09, mv (7=.\9=.)
+mvdecode wkcr82, mv (-9999=.\9=.)
+mvdecode wkc89 wkc spcr ljob89 splj89 splj ljob, mv (9=.)
+
+tab RETR14_4x //retired
+drop redun
+clonevar redun=RETR14_4x
+recode redun -8=0 4=1
+label def redun 0"No" 1"Yes", modify 
+label val redun redun
+tab redun RETR14_4x
+tab redun
+
+tab wkcr82 //work crisis
+drop wkc82
+clonevar wkc82=wkcr82
+recode wkc82 8=0 0=0 1=1
+label def wkc82 0"No" 1"Yes", modify 
+label val wkc82 wkc82
+tab wkc82 wkcr82
+tab wkc82
+
+tab wkc09
+
+tab wkc89
+
+tab wkc
+drop wkc99
+clonevar wkc99=wkc
+recode wkc99 2=0 1=1
+label def wkc99 0"No" 1"Yes", modify 
+label val wkc99 wkc99
+tab wkc99 wkc
+tab wkc99
+
+tab spcr89 //spouse work crisis
+drop spc89
+clonevar spc89=spcr89
+recode spc89 0=0 8=0 1=1
+label def spc89 0"No" 1"Yes", modify 
+label val spc89 spc89
+tab spc89 spcr89
+tab spc89
+
+tab spcr 
+drop spc99
+clonevar spc99=spcr
+recode spc99 2/8=0 1=1
+label def spc99 0"No" 1"Yes", modify 
+label val spc99 spc99
+tab spc99 spcr
+tab spc99
+
+tab SPCR09
+drop spc09
+clonevar spc09=SPCR09
+recode spc09 8=0 0=0 1=1
+label def spc09 0"No" 1"Yes", modify 
+label val spc09 spc09
+tab spc09 SPCR09
+tab spc09
+
+tab ljob89
+drop lojob89
+clonevar lojob89=ljob89
+recode lojob89 8=0 0=0 1=1
+label def lojob89 0"No" 1"Yes", modify 
+label val lojob89 lojob89
+tab lojob89 ljob89
+tab lojob89
+
+tab ljob
+clonevar ljob99=ljob
+recode ljob99 2=0 1=1
+label def ljob99 0"No" 1"Yes", modify 
+label val ljob99 ljob
+tab ljob99 ljob
+tab ljob99
+
+tab SPCR09
+drop spc09
+clonevar spc09=SPCR09
+recode spc09 8=0 0=0 1=1
+label def spc09 0"No" 1"Yes", modify 
+label val spc09 spc09
+tab spc09 SPCR09
+tab spc09
+
+tab LJOB09
+
+tab splj89
+drop spolj89
+clonevar spolj89=splj89
+recode spolj89 8=0 0=0 1=1
+label def spolj89 0"No" 1"Yes", modify 
+label val spolj89 lojob89
+tab spolj89 splj89
+tab spolj89
+
+tab splj
+drop splj99
+clonevar splj99=splj
+recode splj99 2/8=0 1=1
+label def splj99 0"No" 1"Yes", modify 
+label val splj99 spc99
+tab splj99 splj
+tab splj99
+
+tab SPLJ09
+drop splj09
+clonevar splj09=SPLJ09
+recode splj09 8=0 0=0 1=1
+label def splj09 0"No" 1"Yes", modify 
+label val splj09 splj09
+tab splj09 SPLJ09
+tab splj09
+
+gen jobad=splj09+splj99+spolj89+LJOB09+ljob99+lojob89+spc09+spc99+spc89+WKC09+wkc99+wkc89+wkc82+redun
+sum splj09 splj99 spolj89 LJOB09 ljob99 lojob89 spc09 spc99 spc89 WKC09 wkc99 wkc89 wkc82 redun
+alpha splj09 splj99 spolj89 LJOB09 ljob99 lojob89 spc09 spc99 spc89 WKC09 wkc99 wkc89 wkc82 redun, std item label
+
+gen spjobad=splj09+splj99+spolj89+spc09+spc99+spc89
+gen pjobad=LJOB09+ljob99+lojob89+WKC09+wkc99+wkc89+wkc82+redun
+
+gen sjob9909= ljob09+wkc09+ljob99+wkc99
+
+***Total
+
+gen totad3=jobad+socad1+hlthad
+sum div15 pardied moveschtot2 homemove59 sepmum2 fill mill illy15 illy11 ill5y ac89 ac99 AC09 disa72 ill1520 ill2025 ill89 ill ILL09 SIBD72 famcr82 dssp89r dsspr dssp09r relilr RELIL09 RELDI82 reld89 reldr RELD09 RELSD82 rdisr RDIS09 rlos89 rlosr RLOS09 houm89 hou2r HOU209 child82r ms14r spac89r spac3r spac09r chdf89r chdfr chdf09r robb82 rob89 robb99 ROB09 splj09 splj99 spolj89 LJOB09 ljob99 lojob89 spc09 spc99 spc89 WKC09 wkc99 wkc89 wkc82 redun
+alpha div15 pardied moveschtot2 homemove59 sepmum2 fill mill illy15 illy11 ill5y ac89 ac99 AC09 disa72 ill1520 ill2025 ill89 ill ILL09 SIBD72 famcr82 dssp89r dsspr dssp09r relilr RELIL09 RELDI82 reld89 reldr RELD09 RELSD82 rdisr RDIS09 rlos89 rlosr RLOS09 houm89 hou2r HOU209 child82r ms14r spac89r spac3r spac09r chdf89r chdfr chdf09r robb82 rob89 robb99 ROB09 splj09 splj99 spolj89 LJOB09 ljob99 lojob89 spc09 spc99 spc89 WKC09 wkc99 wkc89 wkc82 redun, item std label
+
