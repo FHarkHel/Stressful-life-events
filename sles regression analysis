@@ -1,0 +1,34 @@
+regression analysis for oral presentation
+
+regress masttot14x sletot sex if indtest6==1
+regress masttot14x socad35 sex if indtest6==1
+regress masttot14x jobad sex if indtest6==1
+regress masttot14x cevent sex if indtest6==1
+regress masttot14x indtot sex if indtest6==1
+regress masttot14x deptot sex if indtest6==1
+regress masttot14x pers sex if indtest6==1
+regress masttot14x ipers sex if indtest6==1
+regress masttot14x indtot sex if indtest6==1
+regress masttot14x 1.stressquart sex if indtest6==1
+
+regress lnghq15 sletot sex if indtest7==1
+regress lnghq15 socad35 sex if indtest7==1
+regress lnghq15 jobad sex if indtest7==1
+regress lnghq15 cevent sex if indtest7==1
+regress lnghq15 indtot sex if indtest7==1
+regress lnghq15 deptot sex if indtest7==1
+regress lnghq15 pers sex if indtest7==1
+regress lnghq15 ipers sex if indtest7==1
+regress lnghq15 indtot sex if indtest7==1
+regress lnghq15 1.stressquart sex if indtest7==1
+
+regress wemwbs14 sletot sex if indtest9==1
+regress wemwbs14 socad35 sex if indtest9==1
+regress wemwbs14 jobad sex if indtest9==1
+regress wemwbs14 cevent sex if indtest9==1
+regress wemwbs14 indtot sex if indtest9==1
+regress wemwbs14 deptot sex if indtest9==1
+regress wemwbs14 pers sex if indtest9==1
+regress wemwbs14 ipers sex if indtest9==1
+regress wemwbs14 indtot sex if indtest9==1
+regress wemwbs14 1.stressquart sex if indtest9==1
